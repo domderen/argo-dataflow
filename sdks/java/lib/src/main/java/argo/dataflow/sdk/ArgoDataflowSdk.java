@@ -1,3 +1,5 @@
+package argo.dataflow.sdk;
+
 import com.sun.net.httpserver.HttpServer;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
@@ -8,17 +10,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Main {
+public class ArgoDataflowSdk {
     static Set<String> threadNames = new HashSet<>();
-    public static void main(String[] args) throws Exception {
+    public static void start(IHandler handler) throws Exception {
         ProcessHandle processHandle = ProcessHandle.current();
         System.out.println("Starting web server on pid: " + processHandle.pid());
         var server = HttpServer.create(new InetSocketAddress("localhost", 8080), 0);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
                 public void run() {
-                    System.out.println("Inside Add Shutdown Hook: " + Main.threadNames.size());
-                    while(Main.threadNames.size() != 0) {
+                    System.out.println("Inside Add Shutdown Hook: " + ArgoDataflowSdk.threadNames.size());
+                    while(ArgoDataflowSdk.threadNames.size() != 0) {
                         continue;
                     }
                     server.stop(0);
@@ -29,7 +31,7 @@ public class Main {
         server.setExecutor(Executors.newCachedThreadPool());
         server.createContext("/ready", he -> he.sendResponseHeaders(204, 0));
         server.createContext("/messages", he -> {
-            Main.threadNames
+            ArgoDataflowSdk.threadNames
               .add(Thread.currentThread().getName());
             // read all input bytes
             var isr = new InputStreamReader(he.getRequestBody(), StandardCharsets.UTF_8);
@@ -40,7 +42,7 @@ public class Main {
             }
             isr.close();
             try {
-                var out = Handler.Handle(in.toByteArray(), Collections.<String,String>emptyMap());
+                var out = IHandler.Handle(in.toByteArray(), Collections.<String,String>emptyMap());
                 if (out != null) {
                     he.sendResponseHeaders(201, 0);
                     try (var os = he.getResponseBody()) {
@@ -55,7 +57,7 @@ public class Main {
                     os.write(e.getMessage().getBytes());
                 }
             } finally {
-                Main.threadNames
+                ArgoDataflowSdk.threadNames
               .remove(Thread.currentThread().getName());
             }
         });
