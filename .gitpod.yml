@@ -1,9 +1,25 @@
+gitConfig:
+  alias.st: status
+  alias.co: checkout
+
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: false
+    addComment: false
+    addBadge: true
 
 tasks:
   - init: |
       curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
       sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      rm kubectl
       kubectl version --client
+      curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
+      k3d version
     command: |
       go build
 vscode:
