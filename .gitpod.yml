@@ -15,30 +15,13 @@ github:
 tasks:
   - name: WorkspaceInit
     init: |
-      curl -o olderrunc -L https://github.com/opencontainers/runc/releases/download/v1.0.0-rc93/runc.amd64
-      chmod 755 olderrunc
-      sudo cp -p /usr/bin/runc runc.1.0.1.orig
-      sudo cp olderrunc /usr/bin/runc
       curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
       sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
       rm kubectl
       curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
       k3d cluster create
-      go build
     command: |
-      
-
-  - name: Controller
-    init: gp sync-await bundle # wait for the above 'init' to finish
-    command: bin/webpack-dev-server
-
-  - name: Logs
-    init: gp sync-await bundle
-    command: redis-server
-
-  - name: Dashboard
-    init: gp sync-await bundle
-    command: sidekiq
+      go build
 
 vscode:
   extensions:
